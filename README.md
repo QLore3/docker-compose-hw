@@ -85,10 +85,14 @@ docker rm -f custom-nginx-t2
 
 - Запустите первый контейнер из образа ***centos*** c любым тегом в фоновом режиме, подключив папку  текущий рабочий каталог ```$(pwd)``` на хостовой машине в ```/data``` контейнера, используя ключ -v.
 - Запустите второй контейнер из образа ***debian*** в фоновом режиме, подключив текущий рабочий каталог ```$(pwd)``` в ```/data``` контейнера. 
+
+![Scr-8](https://github.com/QLore3/docker-compose-hw/blob/main/img/img8.png)
+
 - Подключитесь к первому контейнеру с помощью ```docker exec``` и создайте текстовый файл любого содержания в ```/data```.
 - Добавьте ещё один файл в текущий каталог ```$(pwd)``` на хостовой машине.
 - Подключитесь во второй контейнер и отобразите листинг и содержание файлов в ```/data``` контейнера.
 
+![Scr-9](https://github.com/QLore3/docker-compose-hw/blob/main/img/img9.png)
 
 В качестве ответа приложите скриншоты консоли, где видно все введенные команды и их вывод.
 
@@ -119,9 +123,33 @@ services:
 
 И выполните команду "docker compose up -d". Какой из файлов был запущен и почему? (подсказка: https://docs.docker.com/compose/compose-application-model/#the-compose-file )
 
+- Запустился только Portainer из compose.yaml. Docker Compose ищет файлы по приоритету: compose.yaml|yml (новый стандарт) выше, чем docker-compose.yaml|yml (legacy). 
+При наличии обоих берётся первый.
+
 2. Отредактируйте файл compose.yaml так, чтобы были запущенны оба файла. (подсказка: https://docs.docker.com/compose/compose-file/14-include/)
 
+```
+version: "3.9"
+include:
+  - docker-compose.yaml
+services:
+  portainer:
+    network_mode: host
+    image: portainer/portainer-ce:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+```
+
 3. Выполните в консоли вашей хостовой ОС необходимые команды чтобы залить образ custom-nginx как custom-nginx:latest в запущенное вами, локальное registry. Дополнительная документация: https://distribution.github.io/distribution/about/deploying/
+
+```
+docker tag custom-nginx:1.0.0 127.0.0.1:5000/custom-nginx:latest
+docker login 127.0.0.1:5000
+docker push 127.0.0.1:5000/custom-nginx:latest
+```
+
+![Scr-10](https://github.com/QLore3/docker-compose-hw/blob/main/img/img10.png)
+
 4. Откройте страницу "https://127.0.0.1:9000" и произведите начальную настройку portainer.(логин и пароль адмнистратора)
 5. Откройте страницу "http://127.0.0.1:9000/#!/home", выберите ваше local  окружение. Перейдите на вкладку "stacks" и в "web editor" задеплойте следующий компоуз:
 
@@ -134,9 +162,21 @@ services:
     ports:
       - "9090:80"
 ```
+
+![Scr-11](https://github.com/QLore3/docker-compose-hw/blob/main/img/img11.png)
+![Scr-12](https://github.com/QLore3/docker-compose-hw/blob/main/img/img12.png)
+
 6. Перейдите на страницу "http://127.0.0.1:9000/#!/2/docker/containers", выберите контейнер с nginx и нажмите на кнопку "inspect". В представлении <> Tree разверните поле "Config" и сделайте скриншот от поля "AppArmorProfile" до "Driver".
 
+![Scr-13](https://github.com/QLore3/docker-compose-hw/blob/main/img/img13.png)
+
 7. Удалите любой из манифестов компоуза(например compose.yaml).  Выполните команду "docker compose up -d". Прочитайте warning, объясните суть предупреждения и выполните предложенное действие. Погасите compose-проект ОДНОЙ(обязательно!!) командой.
+
+- Docker Compose найдёт compose.yaml, но предупредит о несовместимости версий или отсутствии include'а для удалённого файла. Предложит docker compose config для проверки.
+
+```
+docker compose down
+```
 
 В качестве ответа приложите скриншоты консоли, где видно все введенные команды и их вывод, файл compose.yaml , скриншот portainer c задеплоенным компоузом.
 
